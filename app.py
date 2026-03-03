@@ -2228,8 +2228,8 @@ else:
 # FOOTER
 # ============================================================================
 
-        st.markdown("---")
-        st.markdown("""
+st.markdown("---")
+st.markdown("""
 ### 📌 Disclaimer & Information
 - **Status:** Educational Purpose Only
 - **Risk Warning:** Not financial advice. Crypto trading carries high risk.
