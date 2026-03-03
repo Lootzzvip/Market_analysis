@@ -12,6 +12,14 @@ from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
+# Detect if running in Streamlit context
+_STREAMLIT_RUNNING = False
+try:
+    # This will work only when running `streamlit run app.py`
+    _STREAMLIT_RUNNING = bool(st.runtime.exists())
+except:
+    _STREAMLIT_RUNNING = False
+
 # ============================================================================
 # MODULE 1: DATA ACQUISITION (CONTINUOUS LOOP)
 # ============================================================================
@@ -1177,22 +1185,26 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 TradingView-Style ML Trading Dashboard")
-st.markdown("**Real-Time Bitcoin Analysis | Multi-Timeframe | SMC + Machine Learning**")
+try:
+    st.title("📊 TradingView-Style ML Trading Dashboard")
+    st.markdown("**Real-Time Bitcoin Analysis | Multi-Timeframe | SMC + Machine Learning**")
 
-# Initialize session state for continuous updates
-if 'last_update' not in st.session_state:
-    st.session_state.last_update = datetime.now()
+    # Initialize session state for continuous updates
+    if 'last_update' not in st.session_state:
+        st.session_state.last_update = datetime.now()
 
-# Only initialize Streamlit session state when running as a Streamlit app (not headless bot)
-if 'selected_timeframe' not in st.session_state:
-    st.session_state.selected_timeframe = '1h'
-if 'trend_db' not in st.session_state:
-    st.session_state.trend_db = TrendMLDatabase()
-if 'predictor' not in st.session_state or st.session_state.predictor.db is None or st.session_state.predictor.db.db_path != st.session_state.trend_db.db_path:
-    st.session_state.predictor = FVGPredictor(db=st.session_state.trend_db)
-if 'trade_executor' not in st.session_state:
-    st.session_state.trade_executor = TradeExecutor(initial_balance=10000)
+    # Only initialize Streamlit session state when running as a Streamlit app (not headless bot)
+    if 'selected_timeframe' not in st.session_state:
+        st.session_state.selected_timeframe = '1h'
+    if 'trend_db' not in st.session_state:
+        st.session_state.trend_db = TrendMLDatabase()
+    if 'predictor' not in st.session_state or st.session_state.predictor.db is None or st.session_state.predictor.db.db_path != st.session_state.trend_db.db_path:
+        st.session_state.predictor = FVGPredictor(db=st.session_state.trend_db)
+    if 'trade_executor' not in st.session_state:
+        st.session_state.trade_executor = TradeExecutor(initial_balance=10000)
+except Exception:
+    # Not running in Streamlit or session state not available (e.g., being imported as module)
+    pass
 
 # ============================================================================
 # SIDEBAR CONTROLS (TradingView Style)

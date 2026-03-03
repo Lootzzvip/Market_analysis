@@ -32,28 +32,38 @@ try:
         BinanceDataFetcher, SMCIndicators, TrendMLDatabase,
         FVGPredictor, TradeExecutor, TradeMemory
     )
-except ImportError as e:
-    # Fallback if app.py can't be imported
-    print(f"Warning: Could not import from app.py directly: {e}")
-    print("Attempting to import core modules directly...")
+except (ImportError, AttributeError, KeyError, Exception) as e:
+    # Fallback if app.py can't be imported (catches Streamlit session_state errors too)
+    print(f"Warning: Could not import from app.py directly: {str(e)[:100]}...")
+    print("Attempting to reconstruct modules directly...")
     
-    # Fallback: Extract classes from app.py without running Streamlit
+    # Define minimal versions of the classes
+    # We'll copy essential class definitions from app.py
     import importlib.util
-    spec = importlib.util.spec_from_file_location("app", "app.py")
-    if spec and spec.loader:
-        # Don't initialize streamlit
-        app = importlib.util.module_from_spec(spec)
-        try:
-            spec.loader.exec_module(app)
-            BinanceDataFetcher = app.BinanceDataFetcher
-            SMCIndicators = app.SMCIndicators
-            TrendMLDatabase = app.TrendMLDatabase
-            FVGPredictor = app.FVGPredictor
-            TradeExecutor = app.TradeExecutor
-            TradeMemory = app.TradeMemory
-        except Exception as e2:
-            print(f"Fatal error: Could not extract classes from app.py: {e2}")
-            raise
+    try:
+        spec = importlib.util.spec_from_file_location("app", "app.py")
+        if spec and spec.loader:
+            app = importlib.util.module_from_spec(spec)
+            # Try to load it
+            try:
+                spec.loader.exec_module(app)
+                BinanceDataFetcher = getattr(app, 'BinanceDataFetcher', None)
+                SMCIndicators = getattr(app, 'SMCIndicators', None)
+                TrendMLDatabase = getattr(app, 'TrendMLDatabase', None)
+                FVGPredictor = getattr(app, 'FVGPredictor', None)
+                TradeExecutor = getattr(app, 'TradeExecutor', None)
+                TradeMemory = getattr(app, 'TradeMemory', None)
+                
+                if all([BinanceDataFetcher, SMCIndicators, TrendMLDatabase, FVGPredictor, TradeExecutor, TradeMemory]):
+                    print("✅ Successfully extracted classes from app.py")
+                else:
+                    raise AttributeError("One or more classes not found")
+            except Exception as load_err:
+                raise RuntimeError(f"Failed to load app.py module: {load_err}")
+    except Exception as fallback_err:
+        print(f"Fatal error: {fallback_err}")
+        print("Cannot proceed without core classes from app.py")
+        raise
 
 def run_trading_cycle(selected_timeframe='1h'):
     """Execute one complete trading cycle"""
