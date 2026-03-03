@@ -1,0 +1,44 @@
+name: 24/7 Trading Bot
+
+on:
+  schedule:
+    # Run every 5 minutes (for 5m trades)
+    - cron: '*/5 * * * *'
+    # Run every 15 minutes (for 15m trades)  
+    - cron: '*/15 * * * *'
+    # Run every hour (for 1h+ trades)
+    - cron: '0 * * * *'
+  
+  # Allow manual trigger from GitHub
+  workflow_dispatch:
+
+jobs:
+  trading:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run trading bot
+      run: python trading_bot.py
+    
+    - name: Upload database
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: trading-databases
+        path: |
+          trade_history_v1.db
+          trend_ml_data_v3.db
+        retention-days: 90
