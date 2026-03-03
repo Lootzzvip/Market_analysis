@@ -14,14 +14,46 @@ from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
+# Suppress Streamlit warnings when importing
+import os
+os.environ['STREAMLIT_LOGGER_LEVEL'] = 'error'
+
+# Prevent Streamlit from initializing
+import sys
+sys.argv = ['trading_bot.py']
+
 # Import core classes from app.py
 import sys
 sys.path.insert(0, '/app' if '/app' in __file__ else '.')
 
-from app import (
-    BinanceDataFetcher, SMCIndicators, TrendMLDatabase,
-    FVGPredictor, TradeExecutor, TradeMemory
-)
+try:
+    # Try normal import
+    from app import (
+        BinanceDataFetcher, SMCIndicators, TrendMLDatabase,
+        FVGPredictor, TradeExecutor, TradeMemory
+    )
+except ImportError as e:
+    # Fallback if app.py can't be imported
+    print(f"Warning: Could not import from app.py directly: {e}")
+    print("Attempting to import core modules directly...")
+    
+    # Fallback: Extract classes from app.py without running Streamlit
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("app", "app.py")
+    if spec and spec.loader:
+        # Don't initialize streamlit
+        app = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(app)
+            BinanceDataFetcher = app.BinanceDataFetcher
+            SMCIndicators = app.SMCIndicators
+            TrendMLDatabase = app.TrendMLDatabase
+            FVGPredictor = app.FVGPredictor
+            TradeExecutor = app.TradeExecutor
+            TradeMemory = app.TradeMemory
+        except Exception as e2:
+            print(f"Fatal error: Could not extract classes from app.py: {e2}")
+            raise
 
 def run_trading_cycle(selected_timeframe='1h'):
     """Execute one complete trading cycle"""

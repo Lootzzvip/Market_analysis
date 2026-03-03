@@ -32,7 +32,10 @@ class BinanceDataFetcher:
             df = df.sort_values('timestamp').reset_index(drop=True)
             return df
         except Exception as e:
-            st.error(f"Error fetching data: {e}")
+            try:
+                st.error(f"Error fetching data: {e}")
+            except:
+                print(f"Error fetching data: {e}")
             return None
 
 # ============================================================================
@@ -399,7 +402,10 @@ class SMCIndicators:
                             'strength': row['swing_high_strength']
                         })
             except Exception as e:
-                st.warning(f"Could not fetch {tf_name} zones: {e}")
+                try:
+                    st.warning(f"Could not fetch {tf_name} zones: {e}")
+                except:
+                    print(f"Could not fetch {tf_name} zones: {e}")
                 continue
         
         return mtf_zones
@@ -1177,6 +1183,8 @@ st.markdown("**Real-Time Bitcoin Analysis | Multi-Timeframe | SMC + Machine Lear
 # Initialize session state for continuous updates
 if 'last_update' not in st.session_state:
     st.session_state.last_update = datetime.now()
+
+# Only initialize Streamlit session state when running as a Streamlit app (not headless bot)
 if 'selected_timeframe' not in st.session_state:
     st.session_state.selected_timeframe = '1h'
 if 'trend_db' not in st.session_state:
@@ -1186,15 +1194,11 @@ if 'predictor' not in st.session_state or st.session_state.predictor.db is None 
 if 'trade_executor' not in st.session_state:
     st.session_state.trade_executor = TradeExecutor(initial_balance=10000)
 
-
 # ============================================================================
 # SIDEBAR CONTROLS (TradingView Style)
 # ============================================================================
 
 #st.sidebar.title("⚙️ Settings")
-
-# Timeframe selection
-st.sidebar.markdown("### 📈 Timeframe Selection")
 timeframes = ['1w', '1d', '4h', '2h', '1h', '15m', '5m']
 selected_timeframe = st.sidebar.radio("Choose Timeframe:", timeframes, index=4, horizontal=True)
 
@@ -2224,8 +2228,8 @@ else:
 # FOOTER
 # ============================================================================
 
-st.markdown("---")
-st.markdown("""
+        st.markdown("---")
+        st.markdown("""
 ### 📌 Disclaimer & Information
 - **Status:** Educational Purpose Only
 - **Risk Warning:** Not financial advice. Crypto trading carries high risk.
