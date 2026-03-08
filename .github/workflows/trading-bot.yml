@@ -1,0 +1,61 @@
+name: 24/7 Trading Bot
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Restore database
+      uses: actions/cache@v3
+      with:
+        path: trades.db
+        key: trades-db-${{ github.run_id }}
+        restore-keys: |
+          trades-db-
+    
+    - name: Run trading bot (single cycle)
+      run: |
+        python trading_bot_single_cycle.py
+      env:
+        PYTHONUNBUFFERED: 1
+    
+    - name: Save database
+      uses: actions/cache@v3
+      with:
+        path: trades.db
+        key: trades-db-${{ github.run_id }}
+    
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: trading-logs
+        path: trading_bot.log
+        retention-days: 7

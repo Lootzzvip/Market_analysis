@@ -1,0 +1,22 @@
+[logger]
+level = "error"
+messageFormat = "%(message)s"
+
+[client]
+showErrorDetails = false
+toolbarMode = "minimal"
+showSidebarNavigation = false
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+fastReruns = true
+
+[theme]
+base = "light"
+primaryColor = "#b18457"
+backgroundColor = "#f6efe4"
+secondaryBackgroundColor = "#fff9f0"
+textColor = "#4f3c2b"
+font = "sans serif"
