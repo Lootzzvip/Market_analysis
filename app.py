@@ -2053,11 +2053,11 @@ st.sidebar.warning("⚠️ **Danger Zone**")
 
 # Initialize confirmation state
 if 'confirm_clear' not in st.session_state:
-    st.session_state.confirm_clear = False
+    st.session_state['confirm_clear'] = False
 
-if not st.session_state.confirm_clear:
+if not st.session_state.get('confirm_clear', False):
     if st.sidebar.button("🗑️ Clear All Trades", type="secondary"):
-        st.session_state.confirm_clear = True
+        st.session_state['confirm_clear'] = True
         st.rerun()
 else:
     st.sidebar.error("⚠️ Are you sure? This cannot be undone!")
@@ -2072,19 +2072,19 @@ else:
                     # Reset balance
                     st.session_state.trade_executor.balance = 10000
                     st.session_state.trade_executor.equity = 10000
-                    st.session_state.confirm_clear = False
+                    st.session_state['confirm_clear'] = False
                     st.sidebar.success("✅ All trades cleared! Starting fresh.")
                     st.rerun()
                 else:
                     st.sidebar.error("❌ Failed to clear trades")
-                    st.session_state.confirm_clear = False
+                    st.session_state['confirm_clear'] = False
             except Exception as e:
                 st.sidebar.error(f"❌ Error: {str(e)}")
-                st.session_state.confirm_clear = False
+                st.session_state['confirm_clear'] = False
     
     with col2:
         if st.button("❌ Cancel"):
-            st.session_state.confirm_clear = False
+            st.session_state['confirm_clear'] = False
             st.rerun()
 
 st.sidebar.info("""
